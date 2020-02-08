@@ -1,0 +1,22 @@
+﻿<Window x:Class="VCPoint_GUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VCPoint_GUI"
+        mc:Ignorable="d"
+        Title="中V周刊计算器 v1.0" Height="450" Width="800" FontSize="18" Background="#FFD9FFF6">
+    <Grid HorizontalAlignment="Left" Height="401" Margin="10,10,0,0" VerticalAlignment="Top" Width="770">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="247*"/>
+            <ColumnDefinition Width="138*"/>
+        </Grid.ColumnDefinitions>
+        <Label Content="中V周刊计算器" HorizontalAlignment="Left" Margin="72,37,0,0" VerticalAlignment="Top" Height="62" Width="315" FontSize="48" Foreground="Black" Background="{x:Null}" FontFamily="STXingkai"/>
+        <Label Content="Version 2.0" HorizontalAlignment="Left" Margin="30,50,0,0" VerticalAlignment="Top" FontSize="24" Grid.Column="1"/>
+        <TextBox x:Name="av" HorizontalAlignment="Left" Height="40" Margin="357,151,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="199" Background="#FFFFFDD0" BorderBrush="#FFABADB3" RenderTransformOrigin="-0.019,1.141" FontSize="24" Grid.ColumnSpan="2"/>
+        <Label Content="请输入av号：" HorizontalAlignment="Left" Margin="201,147,0,0" VerticalAlignment="Top" FontSize="24"/>
+        <Button x:Name="calc" Content="开始计算！" HorizontalAlignment="Left" Margin="131,246,0,0" VerticalAlignment="Top" Width="160" Height="63" FontSize="24" Click="Button_calc_Click"/>
+        <Button x:Name="exit" Content="退出程序" HorizontalAlignment="Left" Margin="461,246,0,0" VerticalAlignment="Top" Width="160" Height="63" FontSize="24" Click="Button_exit_Click" Grid.ColumnSpan="2"/>
+        <TextBlock HorizontalAlignment="Left" Margin="230,368,0,0" TextWrapping="Wrap" Text="关于" VerticalAlignment="Top" FontSize="18" TextDecorations="Underline" RenderTransformOrigin="-5.583,-2.333" Foreground="Blue" MouseDown="Text_about_Click" Grid.Column="1"/>
+    </Grid>
+</Window>
