@@ -1,2 +1,2 @@
 # VCPoint-GUI
-An application for calculating how much point a bilibili(especially videos about vocaloid) video will get in the weekly report.
+An application for calculating how many points a bilibili(especially videos about vocaloid) video can get in the weekly report.
