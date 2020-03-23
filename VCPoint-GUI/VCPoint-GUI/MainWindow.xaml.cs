@@ -57,7 +57,11 @@ namespace VCPoint_GUI
         private void Button_calc_Click(object sender, RoutedEventArgs e)
         {
             string st = av.Text;
-            string wb = "https://api.bilibili.com/medialist/gateway/base/resource/info?type=2&rid=" + st;
+            string wb = "https://api.bilibili.com/x/web-interface/view?aid=" + st;
+            if (bv_used.IsChecked == true)
+            {
+                wb = "https://api.bilibili.com/x/web-interface/view?bvid=" + st;
+            }
             string wbc;
             try
             {
@@ -74,17 +78,32 @@ namespace VCPoint_GUI
                 return;
             }
             JObject jo = JObject.Parse(wbc);
+            string aid, bvid;
+            if (bv_used.IsChecked == true)
+            {
+                bvid = st;
+                string ttmp;
+                ttmp = jo["data"]["aid"].ToString();
+                aid = ttmp;
+            }
+            else
+            {
+                aid = st;
+                string ttmp;
+                ttmp = jo["data"]["bvid"].ToString();
+                bvid = ttmp;
+            }
             string stmp;
-            stmp = jo["data"]["cnt_info"]["danmaku"].ToString();
+            stmp = jo["data"]["stat"]["danmaku"].ToString();
             int d = int.Parse(stmp);
-            stmp = jo["data"]["cnt_info"]["play"].ToString();
+            stmp = jo["data"]["stat"]["view"].ToString();
             int v = int.Parse(stmp);
-            stmp = jo["data"]["cnt_info"]["reply"].ToString();
+            stmp = jo["data"]["stat"]["reply"].ToString();
             int r = int.Parse(stmp);
-            stmp = jo["data"]["cnt_info"]["collect"].ToString();
+            stmp = jo["data"]["stat"]["favorite"].ToString();
             int f = int.Parse(stmp);
-            string UnixTime = jo["data"]["pubtime"].ToString();
-            string up = jo["data"]["upper"]["name"].ToString();
+            string UnixTime = jo["data"]["pubdate"].ToString();
+            string up = jo["data"]["owner"]["name"].ToString();
             string title = jo["data"]["title"].ToString();
             DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new DateTime(1970, 1, 1));
             DateTime TranslateDate = startTime.AddSeconds(double.Parse(UnixTime));
@@ -94,7 +113,7 @@ namespace VCPoint_GUI
             MessageBoxResult las = MessageBox.Show("是否需要考虑上周数据？", "上周数据", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (las == MessageBoxResult.Yes)
             {
-                wb = "http://api.bunnyxt.com/tdd/v2/video/" + st + "/record";
+                wb = "http://api.bunnyxt.com/tdd/v2/video/" + aid + "/record";
                 try
                 {
                     wbc = getwebcode1(wb, "utf-8");
@@ -237,7 +256,7 @@ namespace VCPoint_GUI
                     sw.Write("上周数据采集时间：");
                     sw.WriteLine(datat);
                 }
-                sw.WriteLine("av号：{0}\r\n稿件标题：{1}\r\nUP主：{2}\r\n投稿时间：{3}\r\n\r\n播放数：{4}\r\n弹幕数：{5}\r\n评论数：{6}\r\n收藏数：{7}\r\n\r\n修正A：{8:0.00}\r\n修正B：{9:0.00}\r\n总分：{10}", st, title, up, pubt, v, d, r, f, xza, xzb, tot);
+                sw.WriteLine("av号：{0}\r\nbv号：{1}\r\n稿件标题：{2}\r\nUP主：{3}\r\n投稿时间：{4}\r\n\r\n播放数：{5}\r\n弹幕数：{6}\r\n评论数：{7}\r\n收藏数：{8}\r\n\r\n修正A：{9:0.00}\r\n修正B：{10:0.00}\r\n总分：{11}", aid, bvid, title, up, pubt, v, d, r, f, xza, xzb, tot);
                 sw.Close();
                 Process.Start("notepad.exe", path);
                 string opt = "数据已保存在" + path + "!";
@@ -253,7 +272,7 @@ namespace VCPoint_GUI
                     opt += datat.ToString();
                     opt += "\r\n";
                 }
-                opt += "av号：" + st.ToString() + "\r\n稿件标题：" + title + "\r\nUP主：" + up + "\r\n投稿时间：" + pubt + "\r\n\r\n播放数：" + v.ToString() + "\r\n弹幕数：" + d.ToString() + "\r\n评论数：" + r.ToString() + "\r\n收藏数：" + f.ToString() + "\r\n\r\n修正A：" + xza.ToString() + "\r\n修正B：" + xzb.ToString() + "\r\n总分：" + tot.ToString();
+                opt += "av号：" + aid + "\r\nbv号：" + bvid + "\r\n稿件标题：" + title + "\r\nUP主：" + up + "\r\n投稿时间：" + pubt + "\r\n\r\n播放数：" + v.ToString() + "\r\n弹幕数：" + d.ToString() + "\r\n评论数：" + r.ToString() + "\r\n收藏数：" + f.ToString() + "\r\n\r\n修正A：" + xza.ToString() + "\r\n修正B：" + xzb.ToString() + "\r\n总分：" + tot.ToString();
                 MessageBox.Show(opt, "当前数据", MessageBoxButton.OK);
             }
             
