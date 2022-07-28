@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2035
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VCPoint-GUI", "VCPoint-GUI\VCPoint-GUI.csproj", "{A967A5F3-380E-4F51-A798-3D5264E8E166}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A967A5F3-380E-4F51-A798-3D5264E8E166}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A967A5F3-380E-4F51-A798-3D5264E8E166}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A967A5F3-380E-4F51-A798-3D5264E8E166}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A967A5F3-380E-4F51-A798-3D5264E8E166}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {66758E83-D491-473C-8602-01B93201392B}
+	EndGlobalSection
+EndGlobal

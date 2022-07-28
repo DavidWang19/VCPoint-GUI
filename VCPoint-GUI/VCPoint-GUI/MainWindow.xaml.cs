@@ -1,24 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.IO;
 using System.Diagnostics;
 using System.Net;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace VCPoint_GUI
@@ -102,84 +88,118 @@ namespace VCPoint_GUI
             int r = int.Parse(stmp);
             stmp = jo["data"]["stat"]["favorite"].ToString();
             int f = int.Parse(stmp);
-            string UnixTime = jo["data"]["pubdate"].ToString();
+            long UnixTime = long.Parse(jo["data"]["pubdate"].ToString());
             string up = jo["data"]["owner"]["name"].ToString();
             string title = jo["data"]["title"].ToString();
-            DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new DateTime(1970, 1, 1));
-            DateTime TranslateDate = startTime.AddSeconds(double.Parse(UnixTime));
-            string pubt = String.Format("{0}", TranslateDate);
+            var pubTime = DateTimeOffset.FromUnixTimeSeconds(UnixTime);
+            var pubTimeUTC = pubTime.UtcDateTime;
+            var cstZone = TimeZoneInfo.FindSystemTimeZoneById("China Standard Time");
+            var pubTimeCST = TimeZoneInfo.ConvertTimeFromUtc(pubTimeUTC, cstZone);
+            string pubt = String.Format("{0}", pubTimeCST);
 
-            string datat="";
-            MessageBoxResult las = MessageBox.Show("是否需要考虑上周数据？", "上周数据", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (las == MessageBoxResult.Yes)
+            var NowTimeUTC = DateTime.UtcNow;
+            var NowTimeCST = TimeZoneInfo.ConvertTimeFromUtc(NowTimeUTC, cstZone);
+            int DayDiff = (Convert.ToInt32(NowTimeCST.DayOfWeek) + 1) % 7;
+            var TargetDay = NowTimeCST.AddDays(-DayDiff);
+            var TargetTime = new DateTime(TargetDay.Year,
+                TargetDay.Month, TargetDay.Day, 3, 0, 0);
+            bool GetLastWeek = false;
+            string datat = "";
+            if (DateTime.Compare(pubTimeCST, TargetTime) < 0)
             {
-                wb = "http://api.bunnyxt.com/tdd/v2/video/" + aid + "/record";
-                try
+                MessageBoxResult las = MessageBox.Show("是否需要考虑上周数据？",
+                    "上周数据", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (las == MessageBoxResult.Yes)
                 {
-                    wbc = getwebcode1(wb, "utf-8");
-                }
-                catch
-                {
-                    MessageBox.Show("服务器故障！", "计算失败！", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-                if (wbc.Length < 10)
-                {
-                    MessageBox.Show("输入的av号有误！", "计算失败！", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-                DateTime NowTime = DateTime.Now;
-                int DayDiff = (Convert.ToInt32(NowTime.DayOfWeek) + 1) % 7;
-                DateTime TargetDay = NowTime.AddDays(-DayDiff);
-                DateTime TargetTime = new DateTime(TargetDay.Year, TargetDay.Month, TargetDay.Day, 3, 0, 0);
-                int TargetTick = (int)(TargetTime - startTime).TotalSeconds;
-                List<JObject> JArr = new List<JObject>();
-                for (int i = 1; i < wbc.Length;)
-                {
-                    int Start = wbc.IndexOf('{', i);
-                    int End = wbc.IndexOf('}', i);
-                    if (Start == -1 || End == -1) break;
-                    stmp = wbc.Substring(Start, End - Start + 1);
-                    jo = JObject.Parse(stmp);
-                    JArr.Add(jo);
-                    i = End + 1;
-                }
-                int lft = 0, rft = JArr.Count;
-                while (lft + 1 < rft)
-                {
-                    int mid = (lft + rft) / 2;
-                    stmp = JArr[mid]["added"].ToString();
-                    int Tick = int.Parse(stmp);
-                    if (Tick <= TargetTick)
+                    GetLastWeek = true;
+                    DateTimeOffset TargetTimeUTC = TimeZoneInfo.ConvertTimeToUtc(
+                        TargetTime, cstZone);
+                    long TargetUnixTime = TargetTimeUTC.ToUnixTimeSeconds();
+                    long StartUnixTime = TargetUnixTime - 3600 * 2;
+                    long EndUnixTime = TargetUnixTime + 3600 * 2;
+                    wb = String.Concat("http://api.bunnyxt.com/tdd/v2/video/",
+                        aid, "/record?start_ts=", StartUnixTime, "&end_ts=", EndUnixTime);
+                    try
                     {
-                        lft = mid;
+                        wbc = getwebcode1(wb, "utf-8");
                     }
-                    else
+                    catch
                     {
-                        rft = mid;
+                        MessageBox.Show("服务器故障！", "计算失败！",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
                     }
-                }
-                stmp = JArr[lft]["added"].ToString();
-                int NearestTick = int.Parse(stmp), TargetPos = lft;
-                stmp = JArr[lft + 1]["added"].ToString();
-                if (TargetTick - NearestTick > int.Parse(stmp) - TargetTick)
-                {
-                    NearestTick = int.Parse(stmp);
-                    TargetPos = lft + 1;
-                }
-                stmp = JArr[TargetPos]["danmaku"].ToString();
-                int lasd = int.Parse(stmp);
-                stmp = JArr[TargetPos]["view"].ToString();
-                int lasv = int.Parse(stmp);
-                stmp = JArr[TargetPos]["reply"].ToString();
-                int lasr = int.Parse(stmp);
-                stmp = JArr[TargetPos]["favorite"].ToString();
-                int lasf = int.Parse(stmp);
-                TranslateDate = startTime.AddSeconds(NearestTick);
-                datat = String.Format("{0}", TranslateDate);
-                v -= lasv; r -= lasr; d -= lasd; f -= lasf;
-            }
+                    if (wbc.Length < 10)
+                    {
+                        MessageBox.Show("未能获取到上周数据！", "计算失败！",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
 
+                    List<JObject> JArr = new List<JObject>();
+                    for (int i = 1; i < wbc.Length;)
+                    {
+                        int Start = wbc.IndexOf('{', i);
+                        int End = wbc.IndexOf('}', i);
+                        if (Start == -1 || End == -1) break;
+                        stmp = wbc.Substring(Start, End - Start + 1);
+                        jo = JObject.Parse(stmp);
+                        JArr.Add(jo);
+                        i = End + 1;
+                    }
+                    if (JArr.Count == 0)
+                    {
+                        MessageBox.Show("未能获取到上周数据！", "计算失败！",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+                    int lft = 0, rft = JArr.Count;
+                    while (lft + 1 < rft)
+                    {
+                        int mid = (lft + rft) / 2;
+                        stmp = JArr[mid]["added"].ToString();
+                        long Tick = long.Parse(stmp);
+                        if (Tick <= TargetUnixTime)
+                        {
+                            lft = mid;
+                        }
+                        else
+                        {
+                            rft = mid;
+                        }
+                    }
+                    stmp = JArr[lft]["added"].ToString();
+                    long NearestTick = long.Parse(stmp);
+                    int TargetPos = lft;
+                    if (lft + 1 != JArr.Count)
+                    {
+                        stmp = JArr[lft + 1]["added"].ToString();
+                        if (TargetUnixTime - NearestTick >
+                            long.Parse(stmp) - TargetUnixTime)
+                        {
+                            NearestTick = long.Parse(stmp);
+                            TargetPos = lft + 1;
+                        }
+                    }
+                    stmp = JArr[TargetPos]["danmaku"].ToString();
+                    int lasd = int.Parse(stmp);
+                    stmp = JArr[TargetPos]["view"].ToString();
+                    int lasv = int.Parse(stmp);
+                    stmp = JArr[TargetPos]["reply"].ToString();
+                    int lasr = int.Parse(stmp);
+                    stmp = JArr[TargetPos]["favorite"].ToString();
+                    int lasf = int.Parse(stmp);
+                    stmp = JArr[TargetPos]["added"].ToString();
+                    long RealRecordUnixTime = long.Parse(stmp);
+                    var RecordTime = DateTimeOffset.FromUnixTimeSeconds(RealRecordUnixTime);
+                    var RecordTimeUTC = RecordTime.UtcDateTime;
+                    var RecordTimeCST = TimeZoneInfo.ConvertTimeFromUtc(
+                        RecordTimeUTC, cstZone);
+                    datat = String.Format("{0}", RecordTimeCST);
+                    v -= lasv; r -= lasr; d -= lasd; f -= lasf;
+                }
+            }
+            
             double bf = 0, xza = 0, xzb = 0; int tot = 0;
             if (v > 10000) bf = v * 0.5 + 5000; else bf = v;
             xza = Math.Round((bf + f) * 1.0 / (bf + f + d * 10 + r * 20), 2);
@@ -188,7 +208,6 @@ namespace VCPoint_GUI
             if (xzb < 10) bf = bf * xzb * 0.1;
             tot = (int)Math.Round(bf + (r * 25 + d) * xza + f * xzb);
 
-            string tm = DateTime.Now.ToString();
             MessageBoxResult sav = MessageBox.Show("是否需要保存数据？", "保存数据", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (sav == MessageBoxResult.Yes)
             {
@@ -250,8 +269,8 @@ namespace VCPoint_GUI
                 FileStream fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite);
                 StreamWriter sw = new StreamWriter(fs);
                 sw.Write("当前时间：");
-                sw.WriteLine(tm);
-                if (las == MessageBoxResult.Yes)
+                sw.WriteLine(NowTimeCST);
+                if (GetLastWeek)
                 {
                     sw.Write("上周数据采集时间：");
                     sw.WriteLine(datat);
@@ -264,9 +283,9 @@ namespace VCPoint_GUI
             }
             else
             {
-                string opt = tm + "\r\n";
+                string opt = NowTimeCST + "\r\n";
                 opt = "当前时间：" + opt;
-                if (las == MessageBoxResult.Yes)
+                if (GetLastWeek)
                 {
                     opt += "上周数据采集时间：";
                     opt += datat.ToString();
