@@ -81,13 +81,17 @@ namespace VCPoint_GUI
             }
             string stmp;
             stmp = jo["data"]["stat"]["danmaku"].ToString();
-            int d = int.Parse(stmp);
+            int danmaku = int.Parse(stmp);
             stmp = jo["data"]["stat"]["view"].ToString();
-            int v = int.Parse(stmp);
+            int view = int.Parse(stmp);
             stmp = jo["data"]["stat"]["reply"].ToString();
-            int r = int.Parse(stmp);
+            int reply = int.Parse(stmp);
             stmp = jo["data"]["stat"]["favorite"].ToString();
-            int f = int.Parse(stmp);
+            int favorite = int.Parse(stmp);
+            stmp = jo["data"]["stat"]["like"].ToString();
+            int like = int.Parse(stmp);
+            stmp = jo["data"]["stat"]["coin"].ToString();
+            int coin = int.Parse(stmp);
             long UnixTime = long.Parse(jo["data"]["pubdate"].ToString());
             string up = jo["data"]["owner"]["name"].ToString();
             string title = jo["data"]["title"].ToString();
@@ -115,8 +119,8 @@ namespace VCPoint_GUI
                     DateTimeOffset TargetTimeUTC = TimeZoneInfo.ConvertTimeToUtc(
                         TargetTime, cstZone);
                     long TargetUnixTime = TargetTimeUTC.ToUnixTimeSeconds();
-                    long StartUnixTime = TargetUnixTime - 3600 * 2;
-                    long EndUnixTime = TargetUnixTime + 3600 * 2;
+                    long StartUnixTime = TargetUnixTime - 3600 * 6;
+                    long EndUnixTime = TargetUnixTime + 3600 * 6;
                     wb = String.Concat("http://api.bunnyxt.com/tdd/v2/video/",
                         aid, "/record?start_ts=", StartUnixTime, "&end_ts=", EndUnixTime);
                     try
@@ -182,13 +186,17 @@ namespace VCPoint_GUI
                         }
                     }
                     stmp = JArr[TargetPos]["danmaku"].ToString();
-                    int lasd = int.Parse(stmp);
+                    int lastDanmaku = int.Parse(stmp);
                     stmp = JArr[TargetPos]["view"].ToString();
-                    int lasv = int.Parse(stmp);
+                    int lastView = int.Parse(stmp);
                     stmp = JArr[TargetPos]["reply"].ToString();
-                    int lasr = int.Parse(stmp);
+                    int lastReply = int.Parse(stmp);
                     stmp = JArr[TargetPos]["favorite"].ToString();
-                    int lasf = int.Parse(stmp);
+                    int lastFavorite = int.Parse(stmp);
+                    stmp = JArr[TargetPos]["like"].ToString();
+                    int lastLike = int.Parse(stmp);
+                    stmp = JArr[TargetPos]["coin"].ToString();
+                    int lastCoin = int.Parse(stmp);
                     stmp = JArr[TargetPos]["added"].ToString();
                     long RealRecordUnixTime = long.Parse(stmp);
                     var RecordTime = DateTimeOffset.FromUnixTimeSeconds(RealRecordUnixTime);
@@ -196,17 +204,34 @@ namespace VCPoint_GUI
                     var RecordTimeCST = TimeZoneInfo.ConvertTimeFromUtc(
                         RecordTimeUTC, cstZone);
                     datat = String.Format("{0}", RecordTimeCST);
-                    v -= lasv; r -= lasr; d -= lasd; f -= lasf;
+                    view -= lastView; reply -= lastReply; 
+                    danmaku -= lastDanmaku; favorite -= lastFavorite;
+                    like -= lastLike; coin -= lastCoin;
                 }
             }
             
-            double bf = 0, xza = 0, xzb = 0; int tot = 0;
-            if (v > 10000) bf = v * 0.5 + 5000; else bf = v;
-            xza = Math.Round((bf + f) * 1.0 / (bf + f + d * 10 + r * 20), 2);
-            xzb = Math.Round(f * 1.0 / v * 250, 2);
+            double bf = 0, dz = 0, xza = 0, xzb = 0, xzc = 0;
+            int tot = 0;
+            if (view > 10000) bf = view * 0.5 + 5000; else bf = view;
+            if (like > 2000) dz = like * 2 + 4000; else dz = like * 4;
+            xza = (bf + favorite) * 1.0 / (bf + favorite + danmaku * 10 + reply * 20);
+            xzb = favorite * 1.0 / view * 250;
+            xzc = coin * 1.0 / view * 150;
             if (xzb > 50) xzb = 50;
             if (xzb < 10) bf = bf * xzb * 0.1;
-            tot = (int)Math.Round(bf + (r * 25 + d) * xza + f * xzb);
+            if (xzc > 20) xzc = 20;
+            if (xzc < 5) dz = dz * xzc * 0.2;
+            tot = (int)Math.Round(bf + (reply * 25 + danmaku) * xza + dz + favorite * xzb + coin * xzc);
+
+            string outputText = NowTimeCST + "\r\n";
+            outputText = "当前时间：" + outputText;
+            if (GetLastWeek)
+            {
+                outputText += "上周数据采集时间：";
+                outputText += datat.ToString();
+                outputText += "\r\n";
+            }
+            outputText += String.Format("av号：{0}\r\nbv号：{1}\r\n稿件标题：{2}\r\nUP主：{3}\r\n投稿时间：{4}\r\n\r\n播放数：{5}\r\n弹幕数：{6}\r\n评论数：{7}\r\n收藏数：{8}\r\n点赞数：{9}\r\n硬币数：{10}\r\n\r\n修正A：{11:0.00}\r\n修正B：{12:0.00}\r\n修正C：{13:0.00}\r\n总分：{14}", aid, bvid, title, up, pubt, view, danmaku, reply, favorite, like, coin, xza, xzb, xzc, tot);
 
             MessageBoxResult sav = MessageBox.Show("是否需要保存数据？", "保存数据", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (sav == MessageBoxResult.Yes)
@@ -268,14 +293,7 @@ namespace VCPoint_GUI
                 if (notfind_file) goto here;
                 FileStream fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite);
                 StreamWriter sw = new StreamWriter(fs);
-                sw.Write("当前时间：");
-                sw.WriteLine(NowTimeCST);
-                if (GetLastWeek)
-                {
-                    sw.Write("上周数据采集时间：");
-                    sw.WriteLine(datat);
-                }
-                sw.WriteLine("av号：{0}\r\nbv号：{1}\r\n稿件标题：{2}\r\nUP主：{3}\r\n投稿时间：{4}\r\n\r\n播放数：{5}\r\n弹幕数：{6}\r\n评论数：{7}\r\n收藏数：{8}\r\n\r\n修正A：{9:0.00}\r\n修正B：{10:0.00}\r\n总分：{11}", aid, bvid, title, up, pubt, v, d, r, f, xza, xzb, tot);
+                sw.WriteLine(outputText);
                 sw.Close();
                 Process.Start("notepad.exe", path);
                 string opt = "数据已保存在" + path + "!";
@@ -283,16 +301,7 @@ namespace VCPoint_GUI
             }
             else
             {
-                string opt = NowTimeCST + "\r\n";
-                opt = "当前时间：" + opt;
-                if (GetLastWeek)
-                {
-                    opt += "上周数据采集时间：";
-                    opt += datat.ToString();
-                    opt += "\r\n";
-                }
-                opt += "av号：" + aid + "\r\nbv号：" + bvid + "\r\n稿件标题：" + title + "\r\nUP主：" + up + "\r\n投稿时间：" + pubt + "\r\n\r\n播放数：" + v.ToString() + "\r\n弹幕数：" + d.ToString() + "\r\n评论数：" + r.ToString() + "\r\n收藏数：" + f.ToString() + "\r\n\r\n修正A：" + xza.ToString() + "\r\n修正B：" + xzb.ToString() + "\r\n总分：" + tot.ToString();
-                MessageBox.Show(opt, "当前数据", MessageBoxButton.OK);
+                MessageBox.Show(outputText, "当前数据", MessageBoxButton.OK);
             }
             
         }
