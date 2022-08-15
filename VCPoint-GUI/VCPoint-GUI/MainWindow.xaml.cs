@@ -215,6 +215,7 @@ namespace VCPoint_GUI
             if (view > 10000) bf = view * 0.5 + 5000; else bf = view;
             if (like > 2000) dz = like * 2 + 4000; else dz = like * 4;
             xza = (bf + favorite) * 1.0 / (bf + favorite + danmaku * 10 + reply * 20);
+            xza = xza * xza;
             xzb = favorite * 1.0 / view * 250;
             xzc = coin * 1.0 / view * 150;
             if (xzb > 50) xzb = 50;

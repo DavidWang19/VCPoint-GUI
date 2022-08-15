@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VCPoint_GUI"
         mc:Ignorable="d"
-        Title="中V周刊计算器 v2.2" Height="450" Width="800" FontSize="18" Background="#FFD9FFF6">
+        Title="中V周刊计算器 v2.3.1" Height="450" Width="800" FontSize="18" Background="#FFD9FFF6">
     <Grid HorizontalAlignment="Left" Height="401" Margin="10,10,0,0" VerticalAlignment="Top" Width="770">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="54*"/>
@@ -13,7 +13,7 @@
             <ColumnDefinition Width="138*"/>
         </Grid.ColumnDefinitions>
         <Label Content="中V周刊计算器" HorizontalAlignment="Left" Margin="72,37,0,0" VerticalAlignment="Top" Height="62" Width="315" FontSize="48" Foreground="Black" Background="{x:Null}" FontFamily="STXingkai" Grid.ColumnSpan="2"/>
-        <Label Content="Version 2.3" HorizontalAlignment="Left" Margin="30,50,0,0" VerticalAlignment="Top" FontSize="24" Grid.Column="2"/>
+        <Label Content="Version 2.3.1" HorizontalAlignment="Left" Margin="30,50,0,0" VerticalAlignment="Top" FontSize="24" Grid.Column="2"/>
         <TextBox x:Name="av" HorizontalAlignment="Left" Height="40" Margin="249,151,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="199" Background="#FFFFFDD0" BorderBrush="#FFABADB3" RenderTransformOrigin="-0.019,1.141" FontSize="24" Grid.ColumnSpan="2" Grid.Column="1"/>
         <Label Content="请输入编号：" HorizontalAlignment="Left" Margin="93,147,0,0" VerticalAlignment="Top" FontSize="24" Grid.Column="1"/>
         <Button x:Name="calc" Content="开始计算！" HorizontalAlignment="Left" Margin="23,246,0,0" VerticalAlignment="Top" Width="160" Height="63" FontSize="24" Click="Button_calc_Click" Grid.Column="1"/>
